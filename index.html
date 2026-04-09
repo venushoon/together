@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>함께 배움 보드</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --sidebar-color: #ffffff;
+            --accent-color: #ffcc00;
+            --text-color: #333;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Pretendard', sans-serif;
+            overflow: hidden;
+            background-color: var(--bg-color);
+        }
+
+        #app {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 사이드바 스타일 */
+        #sidebar {
+            width: 250px;
+            background: var(--sidebar-color);
+            border-right: 2px border-radius 20px;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        h2 { font-size: 1.2rem; color: #555; margin-bottom: 15px; text-align: center; }
+
+        .student-list {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        /* 학생 카드 스타일 (사이드바) */
+        .student-item {
+            background: #fff;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .student-item:hover { border-color: var(--accent-color); transform: scale(1.02); }
+        .student-item.completed { opacity: 0.5; background: #e0e0e0; cursor: default; }
+
+        /* 메인 보드 스타일 */
+        #board-container {
+            flex-grow: 1;
+            position: relative;
+            background: #fff;
+            margin: 20px;
+            border-radius: 30px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0; left: 0;
+            pointer-events: none;
+        }
+
+        /* 메인 보드 위 학생 카드 */
+        .card {
+            position: absolute;
+            width: 80px;
+            height: 110px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 3px solid #ffde59;
+            cursor: move;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            z-index: 5;
+            transition: transform 0.1s;
+        }
+
+        .card:active { transform: scale(1.1); z-index: 100; }
+
+        .card .emoji { font-size: 2rem; margin-bottom: 5px; }
+        .card .name { font-weight: bold; color: #444; font-size: 0.9rem; }
+
+        /* 도구함 */
+        .controls {
+            position: absolute;
+            top: 20px; right: 20px;
+            display: flex; gap: 10px;
+            z-index: 100;
+        }
+
+        button {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: none;
+            background: #333;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover { background: #555; }
+        
+        .header-info {
+            position: absolute;
+            top: 20px; left: 30px;
+            pointer-events: none;
+        }
+        .header-info h1 { margin: 0; color: #ff914d; font-size: 1.8rem; }
+        .header-info p { margin: 5px 0; color: #888; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <aside id="sidebar">
+        <h2>🧑‍🏫 학생 명단</h2>
+        <div class="student-list" id="studentList">
+            </div>
+        <p style="font-size: 0.8rem; color: #999; text-align: center;">카드를 눌러 보드에 추가!</p>
+    </aside>
+
+    <main id="board-container" id="board">
+        <div class="header-info">
+            <h1>〈 함께 배움 〉</h1>
+            <p id="missionText">목표: 수익 12~13쪽 / 시간: 20분</p>
+        </div>
+        
+        <div class="controls">
+            <button onclick="clearLines()">곡선 지우기</button>
+            <button onclick="resetBoard()" style="background:#ff5757;">초기화</button>
+        </div>
+
+        <canvas id="canvas"></canvas>
+    </main>
+</div>
+
+<script>
+    // --- 설정 데이터 ---
+    const studentNames = ["김민준", "이서연", "박지우", "최예준", "정윤아", "강도윤", "임하은", "한주원", "송지현", "오민수", "유진아", "전진우"];
+    const emojis = ["🐰", "🐥", "🦊", "🐻", "🐼", "🦁", "🐸", "🐨"];
+
+    const board = document.getElementById('board-container');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const studentListEl = document.getElementById('studentList');
+
+    let cards = [];
+    let connections = []; // {fromId, toId}
+    let isDrawingLine = false;
+    let lineStartCard = null;
+
+    // --- 초기화 ---
+    function init() {
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        studentNames.forEach(name => {
+            const div = document.createElement('div');
+            div.className = 'student-item';
+            div.innerText = name;
+            div.onclick = () => createCard(name, div);
+            studentListEl.appendChild(div);
+        });
+
+        // 캔버스 인터랙션
+        board.addEventListener('mousedown', startLine);
+        window.addEventListener('mousemove', drawLine);
+        window.addEventListener('mouseup', endLine);
+    }
+
+    function resizeCanvas() {
+        canvas.width = board.clientWidth;
+        canvas.height = board.clientHeight;
+        render();
+    }
+
+    // --- 카드 생성 및 드래그 ---
+    function createCard(name, el) {
+        if(el.classList.contains('completed')) return;
+        el.classList.add('completed');
+
+        const card = document.createElement('div');
+        const id = 'card-' + Date.now();
+        card.id = id;
+        card.className = 'card';
+        card.style.left = '50px';
+        card.style.top = '100px';
+        
+        const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+        card.innerHTML = `<span class="emoji">${emoji}</span><span class="name">${name}</span>`;
+        
+        board.appendChild(card);
+        makeDraggable(card);
+        cards.push(card);
+    }
+
+    function makeDraggable(el) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        el.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            if (e.shiftKey) return; // Shift 누르고 클릭하면 선 긋기 모드로 활용 가능
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e.preventDefault();
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            el.style.top = (el.offsetTop - pos2) + "px";
+            el.style.left = (el.offsetLeft - pos1) + "px";
+            render();
+        }
+
+        function closeDragElement() {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+    // --- 배움 곡선 (선 긋기) 로직 ---
+    function startLine(e) {
+        const targetCard = e.target.closest('.card');
+        if (targetCard) {
+            isDrawingLine = true;
+            lineStartCard = targetCard;
+        }
+    }
+
+    function drawLine(e) {
+        if (!isDrawingLine) return;
+        render();
+        
+        // 현재 긋고 있는 임시 선 시각화
+        const startRect = lineStartCard.getBoundingClientRect();
+        const boardRect = board.getBoundingClientRect();
+        
+        ctx.beginPath();
+        ctx.moveTo(startRect.left + 40 - boardRect.left, startRect.top + 55 - boardRect.top);
+        ctx.lineTo(e.clientX - boardRect.left, e.clientY - boardRect.top);
+        ctx.strokeStyle = '#3498db';
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+    }
+
+    function endLine(e) {
+        if (!isDrawingLine) return;
+        const targetCard = e.target.closest('.card');
+        
+        if (targetCard && targetCard !== lineStartCard) {
+            connections.push({ from: lineStartCard.id, to: targetCard.id });
+        }
+        
+        isDrawingLine = false;
+        lineStartCard = null;
+        render();
+    }
+
+    // --- 렌더링 (곡선 그리기) ---
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.setLineDash([]);
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+
+        connections.forEach(conn => {
+            const fromEl = document.getElementById(conn.from);
+            const toEl = document.getElementById(conn.to);
+            if(!fromEl || !toEl) return;
+
+            const b = board.getBoundingClientRect();
+            const f = fromEl.getBoundingClientRect();
+            const t = toEl.getBoundingClientRect();
+
+            const x1 = f.left + 40 - b.left;
+            const y1 = f.top + 55 - b.top;
+            const x2 = t.left + 40 - b.left;
+            const y2 = t.top + 55 - b.top;
+
+            // 곡선 그리기 (베지어 곡선)
+            const cp1x = x1 + (x2 - x1) / 2;
+            const cp1y = y1 - 30; // 약간 위로 휘게
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo(cp1x, cp1y, x2, y2);
+            ctx.strokeStyle = '#5dade2';
+            ctx.stroke();
+
+            // 화살표 머리
+            const angle = Math.atan2(y2 - cp1y, x2 - cp1x);
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 15 * Math.cos(angle - Math.PI / 6), y2 - 15 * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 15 * Math.cos(angle + Math.PI / 6), y2 - 15 * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        });
+    }
+
+    function clearLines() { connections = []; render(); }
+    function resetBoard() { location.reload(); }
+
+    init();
+</script>
+
+</body>
+</html>
