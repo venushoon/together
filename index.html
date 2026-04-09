@@ -1,379 +1,502 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>함께 배움 보드 (Focus Mode)</title>
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>함께 배움 보드 (Ultimate Edition)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
 
-        :root {
-            --bg-color: #f8f9fa;
-            --surface: rgba(255, 255, 255, 0.7);
-            --surface-solid: #ffffff;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --accent: #ef4444;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
-            --shadow-lg: 0 20px 40px rgba(0,0,0,0.08);
-            --radius-md: 16px;
-            --radius-lg: 24px;
-        }
-
-        * { box-sizing: border-box; font-family: 'Pretendard', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-
-        body, html {
-            margin: 0; padding: 0; height: 100%; overflow: hidden;
-            background-color: var(--bg-color); color: var(--text-main);
-            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-            background-size: 28px 28px;
-            display: flex; flex-direction: column;
-        }
-
-        .glass {
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* --- 상단 주인공 영역 (타이틀 & 목표) --- */
-        header {
-            padding: 30px 40px; display: flex; justify-content: space-between; align-items: flex-start;
-            position: relative; z-index: 20; pointer-events: none;
-        }
-
-        .hero-section {
-            display: flex; flex-direction: column; gap: 8px; pointer-events: auto;
-            max-width: 70%;
-        }
-
-        .board-title { 
-            font-size: 1.2rem; font-weight: 800; color: var(--primary); 
-            margin: 0; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;
-        }
-
-        .goal-input {
-            border: none; background: transparent; font-size: 2.5rem; font-weight: 800; 
-            color: var(--text-main); width: 100vw; max-width: 800px; outline: none; 
-            letter-spacing: -1px; line-height: 1.2;
-            transition: color 0.2s;
-        }
-        .goal-input::placeholder { color: #cbd5e1; }
-        .goal-input:focus { color: var(--primary); }
-
-        /* --- 타이머 영역 (미니멀리즘) --- */
-        .timer-widget {
-            display: flex; align-items: center; gap: 12px; pointer-events: auto;
-            padding: 12px 24px; border-radius: 100px; background: var(--surface-solid);
-            box-shadow: var(--shadow-md); border: 1px solid var(--border);
-        }
+<style>
+    :root {
+        /* 세련된 아카데믹 컬러 팔레트 */
+        --ink: #1e293b;
+        --ink-light: #475569;
+        --paper: #f8fafc;
+        --surface: #ffffff;
+        --navy: #1e3a8a;
+        --navy-light: #eff6ff;
+        --accent: #e11d48;
+        --gold: #d97706;
+        --border: #e2e8f0;
         
-        .time-display { 
-            font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; 
-            letter-spacing: -1px; cursor: pointer; transition: color 0.2s;
-        }
-        .time-display:hover { color: var(--primary); }
-        .time-display.warning { color: var(--accent); animation: pulse 1s infinite; }
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
+        --shadow-lg: 0 15px 35px rgba(15, 23, 42, 0.1);
         
-        .timer-controls { display: flex; gap: 6px; }
-        .btn-icon {
-            width: 36px; height: 36px; border: none; border-radius: 50%;
-            background: #f1f5f9; color: var(--text-main); font-size: 1rem; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; transition: 0.2s;
-        }
-        .btn-icon:hover { background: #e2e8f0; }
-        .btn-icon.play { background: var(--primary); color: white; }
-        .btn-icon.play:hover { background: var(--primary-hover); }
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 20px;
+        --radius-full: 999px;
+    }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* --- 메인 보드 (작업 영역) --- */
-        main { flex-grow: 1; position: relative; overflow: hidden; touch-action: none; }
-        canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+    body, html {
+        margin: 0; padding: 0; height: 100%; overflow: hidden;
+        font-family: 'Pretendard', 'DM Sans', sans-serif;
+        background: var(--paper); color: var(--ink);
+    }
 
-        /* 플로팅 툴바 */
-        .floating-toolbar {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 8px; border-radius: 100px; display: flex; gap: 8px; z-index: 20;
-        }
+    #app { display: flex; height: 100vh; }
 
-        .tool-btn {
-            padding: 12px 24px; border: none; border-radius: 100px; font-weight: 700; font-size: 1rem;
-            cursor: pointer; display: flex; align-items: center; gap: 8px; background: transparent;
-            color: var(--text-muted); transition: all 0.2s ease;
-        }
-        .tool-btn:hover { background: rgba(0,0,0,0.04); color: var(--text-main); }
-        .tool-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-        .tool-btn.danger { color: var(--accent); }
-        .tool-btn.danger:hover { background: rgba(239, 68, 68, 0.1); }
+    /* ─────────────────────────────────────────
+       SIDEBAR (소외되는 학생 없는 2열 그리드)
+    ───────────────────────────────────────── */
+    #sidebar {
+        width: 320px; background: var(--surface); border-right: 1px solid var(--border);
+        display: flex; flex-direction: column; z-index: 50; flex-shrink: 0;
+        box-shadow: 2px 0 20px rgba(0,0,0,0.02);
+    }
 
-        /* 학생 카드 (보드 위) */
-        .board-card {
-            position: absolute; width: 100px; height: 130px; background: var(--surface-solid);
-            border-radius: var(--radius-md); box-shadow: var(--shadow-md);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-            user-select: none; z-index: 5; transition: transform 0.1s, box-shadow 0.2s;
-            border: 2px solid transparent;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .board-card .emoji-wrap { font-size: 2.5rem; }
-        .board-card .name { font-weight: 700; color: var(--text-main); font-size: 1.05rem; }
-        
-        body[data-mode="move"] .board-card { cursor: grab; }
-        body[data-mode="move"] .board-card:active { cursor: grabbing; z-index: 100; box-shadow: var(--shadow-lg); transform: scale(1.05); }
-        body[data-mode="connect"] .board-card { cursor: crosshair; }
-        body[data-mode="connect"] .board-card:hover { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    .sidebar-header {
+        padding: 24px; border-bottom: 1px solid var(--border);
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    
+    .brand-title { font-size: 1.3rem; font-weight: 800; color: var(--navy); margin: 0; letter-spacing: -0.5px; }
+    .brand-sub { font-size: 0.75rem; color: var(--ink-light); font-weight: 600; letter-spacing: 1px; }
+    
+    .icon-btn {
+        width: 36px; height: 36px; background: var(--paper); border: none; border-radius: var(--radius-sm);
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        color: var(--ink-light); transition: 0.2s;
+    }
+    .icon-btn:hover { background: var(--border); color: var(--ink); }
 
-        /* --- 하단 독 (학생 명단) --- */
-        footer {
-            height: 90px; background: var(--surface-solid); border-top: 1px solid var(--border);
-            display: flex; align-items: center; padding: 0 20px; z-index: 50; box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
-        }
+    .student-list-container {
+        padding: 16px; overflow-y: auto; flex-grow: 1;
+        /* 핵심: 2열 그리드 적용하여 한 화면에 많은 학생 표시 */
+        display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start;
+    }
+    
+    /* 스크롤바 미려하게 */
+    .student-list-container::-webkit-scrollbar { width: 6px; }
+    .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
-        .dock-container {
-            display: flex; gap: 12px; overflow-x: auto; flex-grow: 1; padding: 10px 0;
-            scrollbar-width: none; /* Firefox */
-        }
-        .dock-container::-webkit-scrollbar { display: none; } /* Chrome */
+    .student-item {
+        background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+        padding: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+        display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .student-item:hover { border-color: var(--navy); background: var(--navy-light); color: var(--navy); transform: translateY(-1px); }
+    .student-item.completed { opacity: 0.4; pointer-events: none; background: var(--paper); border-style: dashed; }
+    
+    .student-emoji { font-size: 1.1rem; }
+    .student-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .student-chip {
-            min-width: max-content; padding: 10px 20px; background: #f8fafc; 
-            border: 1px solid var(--border); border-radius: 100px; font-weight: 700; font-size: 1rem;
-            cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
-            box-shadow: var(--shadow-sm);
-        }
-        .student-chip:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-        .student-chip.completed { opacity: 0.4; pointer-events: none; background: #f1f5f9; box-shadow: none; }
+    /* 사이드바 하단 프로그레스바 */
+    .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); background: #fafafa; }
+    .progress-text { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--ink-light); margin-bottom: 8px; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: var(--radius-full); overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--navy); border-radius: var(--radius-full); transition: width 0.4s ease; }
 
-        .settings-btn {
-            min-width: 50px; height: 50px; border-radius: 50%; background: white; border: 1px solid var(--border);
-            display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer;
-            margin-left: 20px; box-shadow: var(--shadow-sm); transition: 0.2s;
-        }
-        .settings-btn:hover { background: #f1f5f9; }
+    /* ─────────────────────────────────────────
+       MAIN BOARD & TOP BAR
+    ───────────────────────────────────────── */
+    #board {
+        flex-grow: 1; position: relative; overflow: hidden; touch-action: none;
+        background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 24px 24px;
+    }
 
-        /* --- 모달 --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);
-            display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: 0.3s;
-        }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-content {
-            background: var(--surface-solid); padding: 32px; border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg); width: 420px; max-width: 90%; transform: scale(0.95); transition: 0.3s cubic-bezier(0.17, 0.88, 0.32, 1.27);
-        }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .modal-title { font-size: 1.4rem; font-weight: 800; margin: 0; }
-        .close-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted); }
-        
-        .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
-        .modal-input { flex-grow: 1; padding: 14px; border: 1px solid var(--border); border-radius: 12px; outline: none; font-size: 1rem; }
-        .btn-full { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        
-        .edit-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        .edit-item { display: flex; justify-content: space-between; padding: 12px; background: #f8fafc; border-radius: 12px; font-weight: 600; }
+    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
 
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    #top-bar {
+        position: absolute; top: 20px; left: 20px; right: 20px;
+        display: flex; gap: 16px; z-index: 20; pointer-events: none;
+    }
 
-        /* 모바일 최적화 */
-        @media (max-width: 768px) {
-            header { flex-direction: column; padding: 20px; gap: 15px; }
-            .hero-section { max-width: 100%; }
-            .goal-input { font-size: 1.8rem; }
-            .floating-toolbar { bottom: 10px; width: 95%; justify-content: space-between; padding: 8px 12px; }
-            .tool-btn span { display: none; }
-            .tool-btn::before { content: attr(data-icon); font-size: 1.5rem; }
-        }
-    </style>
+    /* 목표 입력 박스 */
+    .goal-widget {
+        background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+        padding: 16px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+        display: flex; align-items: center; gap: 12px; pointer-events: auto; flex-grow: 1;
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    .goal-widget::before { content:''; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px #fef3c7; flex-shrink: 0; }
+    .goal-input {
+        border: none; background: transparent; font-size: 1.2rem; font-weight: 700; color: var(--ink);
+        width: 100%; outline: none; letter-spacing: -0.5px;
+    }
+    .goal-input::placeholder { color: #94a3b8; font-weight: 500; }
+
+    /* 프리미엄 타이머 (애플 스타일 UI) */
+    .timer-widget {
+        background: var(--surface); padding: 8px 16px 8px 24px; border-radius: 100px;
+        box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 20px;
+        pointer-events: auto; border: 1px solid var(--border); flex-shrink: 0;
+    }
+    .time-display {
+        font-family: 'DM Sans', sans-serif; font-size: 1.8rem; font-weight: 700;
+        color: var(--ink); letter-spacing: -1px; font-variant-numeric: tabular-nums;
+        cursor: pointer; transition: color 0.2s;
+    }
+    .time-display:hover { color: var(--navy); }
+    .time-display.warning { color: var(--accent); animation: pulse 1s infinite; }
+    
+    .timer-controls { display: flex; gap: 6px; align-items: center; }
+    
+    .timer-btn {
+        width: 36px; height: 36px; border: none; border-radius: 50%; background: var(--paper);
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        color: var(--ink-light); transition: all 0.2s; font-weight: bold; font-size: 0.9rem;
+    }
+    .timer-btn:hover { background: var(--border); color: var(--ink); }
+    
+    /* 재생/일시정지 메인 버튼 */
+    .play-pause-btn {
+        width: 44px; height: 44px; background: var(--navy); color: white; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
+    }
+    .play-pause-btn:hover { background: #172554; transform: scale(1.05); }
+    .play-pause-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* ─────────────────────────────────────────
+       BOTTOM TOOLBAR
+    ───────────────────────────────────────── */
+    .bottom-toolbar {
+        position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+        padding: 8px; border-radius: 100px; box-shadow: var(--shadow-lg);
+        display: flex; gap: 4px; z-index: 20; border: 1px solid var(--border);
+    }
+
+    .tool-btn {
+        padding: 12px 24px; border: none; border-radius: 100px; font-weight: 700; font-size: 0.95rem;
+        cursor: pointer; display: flex; align-items: center; gap: 8px; background: transparent;
+        color: var(--ink-light); transition: all 0.2s ease;
+    }
+    .tool-btn:hover { background: var(--paper); color: var(--ink); }
+    .tool-btn.active { background: var(--navy); color: white; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25); }
+    .tool-btn.danger { color: var(--accent); }
+    .tool-btn.danger:hover { background: #fff1f2; }
+    .divider { width: 1px; height: 24px; background: var(--border); margin: auto 4px; }
+
+    /* ─────────────────────────────────────────
+       STUDENT CARDS (Board)
+    ───────────────────────────────────────── */
+    .board-card {
+        position: absolute; width: 100px; background: var(--surface); border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg); display: flex; flex-direction: column; align-items: center;
+        padding: 16px 10px; gap: 8px; user-select: none; z-index: 5; border: 2px solid transparent;
+        transform-origin: center; animation: cardPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* 카드 상단 컬러 라인 */
+    .board-card::before {
+        content: ''; position: absolute; top: -2px; left: 20px; right: 20px; height: 4px;
+        border-radius: 0 0 4px 4px; background: var(--card-color, var(--navy)); transition: background 0.2s;
+    }
+
+    .card-emoji {
+        width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 1.8rem; background: var(--card-bg-color, var(--paper)); flex-shrink: 0;
+    }
+    .card-name { font-weight: 700; color: var(--ink); font-size: 0.9rem; text-align: center; }
+    
+    /* 도움 횟수 배지 */
+    .card-badge {
+        position: absolute; top: -8px; right: -8px; background: var(--navy); color: white;
+        font-size: 0.75rem; font-weight: 800; min-width: 24px; height: 24px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; border: 2px solid white;
+        opacity: 0; transform: scale(0); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .card-badge.visible { opacity: 1; transform: scale(1); }
+
+    body[data-mode="move"] .board-card { cursor: grab; }
+    body[data-mode="move"] .board-card:active { cursor: grabbing; z-index: 100; transform: scale(1.05); }
+    body[data-mode="connect"] .board-card { cursor: crosshair; }
+    body[data-mode="connect"] .board-card:hover { border-color: var(--card-color, var(--navy)); box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1); }
+
+    @keyframes cardPop { 0% { transform: scale(0.5) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* 모달 공통 */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+        display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: 0.2s;
+    }
+    .modal-overlay.active { display: flex; opacity: 1; }
+    .modal-content {
+        background: var(--surface); padding: 32px; border-radius: 24px; box-shadow: var(--shadow-lg);
+        width: 440px; max-width: 90%; transform: scale(0.95); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    
+    .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+    .modal-title { font-size: 1.4rem; font-weight: 800; margin: 0; color: var(--ink); }
+    .modal-sub { font-size: 0.85rem; color: var(--ink-light); margin-top: 4px; }
+    
+    .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+    .modal-input { flex-grow: 1; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 1rem; outline: none; }
+    .modal-input:focus { border-color: var(--navy); }
+    .btn-primary { background: var(--navy); color: white; border: none; padding: 0 20px; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; }
+    
+    .edit-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .edit-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--paper); border-radius: var(--radius-md); font-weight: 600; }
+
+    /* 인사이트 리스트 */
+    .insight-row { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .insight-row:last-child { border-bottom: none; }
+    .insight-medal { font-size: 1.5rem; width: 32px; text-align: center; flex-shrink: 0; }
+    .insight-info { flex-grow: 1; }
+    .insight-name { font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+    .insight-bar-bg { height: 8px; background: var(--paper); border-radius: 4px; overflow: hidden; }
+    .insight-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .insight-count { font-weight: 800; font-size: 0.9rem; color: var(--navy); background: var(--navy-light); padding: 4px 12px; border-radius: 100px; }
+
+</style>
 </head>
 <body data-mode="move">
 
-    <header>
-        <div class="hero-section">
-            <h1 class="board-title">✨ 함께 배움 보드</h1>
-            <input type="text" id="goalInput" class="goal-input" placeholder="오늘의 배움 목표를 입력하세요">
-        </div>
-        <div class="timer-widget">
-            <div class="time-display" id="timeDisplay" onclick="setTimeManually()" title="클릭하여 시간 설정">20:00</div>
-            <div class="timer-controls">
-                <button class="btn-icon play" id="playBtn" onclick="toggleTimer()" title="시작/일시정지">▶</button>
-                <button class="btn-icon" onclick="resetTimer()" title="리셋">🔄</button>
+<div id="app">
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div>
+                <h1 class="brand-title">Learner Board</h1>
+                <span class="brand-sub">배움 나눔 보드</span>
             </div>
+            <button class="icon-btn" onclick="openModal('studentModal')" title="명단 설정">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
         </div>
-    </header>
+        
+        <div class="student-list-container" id="studentList"></div>
+        
+        <div class="sidebar-footer">
+            <div class="progress-text">
+                <span>보드 참여율</span>
+                <span id="progressText" style="color:var(--navy)">0 / 0명</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:0%"></div></div>
+        </div>
+    </aside>
 
     <main id="board">
+        <div id="top-bar">
+            <div class="goal-widget">
+                <input type="text" id="goalInput" class="goal-input" placeholder="오늘의 배움 목표를 입력하세요">
+            </div>
+            
+            <div class="timer-widget">
+                <div class="time-display" id="timeDisplay" onclick="setTimeManually()" title="클릭하여 시간 설정">20:00</div>
+                <div class="timer-controls">
+                    <button class="timer-btn" onclick="adjustTime(-1)">-1</button>
+                    
+                    <button class="timer-btn play-pause-btn" id="playBtn" onclick="toggleTimer()">
+                        <svg id="icon-play" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    </button>
+                    
+                    <button class="timer-btn" onclick="resetTimer()" title="초기화">↺</button>
+                    <button class="timer-btn" onclick="adjustTime(1)">+1</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-toolbar">
+            <button class="tool-btn active" id="btnMoveMode" onclick="setMode('move')">🖐️ 이동</button>
+            <button class="tool-btn" id="btnConnectMode" onclick="setMode('connect')">🔗 배움 릴레이</button>
+            <div class="divider"></div>
+            <button class="tool-btn" onclick="showInsights()">📊 인사이트</button>
+            <div class="divider"></div>
+            <button class="tool-btn danger" onclick="clearLines()">🧹 선 지우기</button>
+            <button class="tool-btn danger" onclick="resetBoard()">🗑️ 초기화</button>
+        </div>
+
         <canvas id="canvas"></canvas>
-        
-        <div class="floating-toolbar glass">
-            <button class="tool-btn active" id="btnMoveMode" data-icon="🖐️" onclick="setMode('move')"><span>이동 모드</span></button>
-            <button class="tool-btn" id="btnConnectMode" data-icon="🔗" onclick="setMode('connect')"><span>배움 릴레이</span></button>
-            <div style="width: 1px; background:var(--border); margin: 0 4px;"></div>
-            <button class="tool-btn" data-icon="📊" onclick="showInsights()"><span>인사이트</span></button>
-            <button class="tool-btn danger" data-icon="🧹" onclick="clearLines()"><span>선 지우기</span></button>
-            <button class="tool-btn danger" data-icon="🗑️" onclick="resetBoard()"><span>초기화</span></button>
-        </div>
     </main>
+</div>
 
-    <footer>
-        <div class="dock-container" id="studentDock"></div>
-        <button class="settings-btn" onclick="openModal('studentModal')" title="명단 설정">⚙️</button>
-    </footer>
-
-    <div class="modal-overlay" id="studentModal">
-        <div class="modal-content">
-            <div class="modal-header">
+<div class="modal-overlay" id="studentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
                 <h3 class="modal-title">학생 명단 관리</h3>
-                <button class="close-btn" onclick="closeModal('studentModal')">✕</button>
+                <p class="modal-sub">이름을 입력하여 추가하거나 ✕를 눌러 삭제하세요.</p>
             </div>
-            <div class="input-group">
-                <input type="text" id="newStudentName" class="modal-input" placeholder="이름 입력 후 엔터" onkeypress="if(event.key==='Enter') addStudent()">
-                <button class="btn-full" style="width: 80px;" onclick="addStudent()">추가</button>
-            </div>
-            <div class="edit-list" id="editStudentList"></div>
+            <button class="icon-btn" onclick="closeModal('studentModal')">✕</button>
         </div>
+        <div class="input-group">
+            <input type="text" id="newStudentName" class="modal-input" placeholder="이름 입력 후 엔터" onkeypress="if(event.key==='Enter') addStudent()">
+            <button class="btn-primary" onclick="addStudent()">추가</button>
+        </div>
+        <div class="edit-list" id="editStudentList"></div>
     </div>
+</div>
 
-    <div class="modal-overlay" id="insightModal">
-        <div class="modal-content">
-            <div class="modal-header">
+<div class="modal-overlay" id="insightModal">
+    <div class="modal-content" style="width: 500px;">
+        <div class="modal-header">
+            <div>
                 <h3 class="modal-title">오늘의 배움 나눔 왕 👑</h3>
-                <button class="close-btn" onclick="closeModal('insightModal')">✕</button>
+                <p class="modal-sub">친구들에게 나눔을 실천한 멋진 학생들입니다.</p>
             </div>
-            <div id="insightList" class="edit-list" style="max-height: 400px; margin-bottom: 0;"></div>
+            <button class="icon-btn" onclick="closeModal('insightModal')">✕</button>
         </div>
+        <div id="insightList" class="edit-list" style="max-height: 400px; overflow-x:hidden;"></div>
     </div>
+</div>
 
 <script>
-    /* 사운드 엔진 */
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    /* ==========================================
+       사운드 (웹 오디오 API)
+    ========================================== */
+    let audioCtx;
     function playSound(type) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        
-        if (type === 'pop') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-            gainNode.gain.setValueAtTime(0.3, now); gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'connect') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554.37, now + 0.1);
-            gainNode.gain.setValueAtTime(0.2, now); gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
-            osc.start(now); osc.stop(now + 0.3);
-        }
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'pop') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'connect') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554.37, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'alert') {
+                osc.type = 'square';
+                [0, 0.2, 0.4].forEach((t, i) => { osc.frequency.setValueAtTime([400, 600, 400][i], now + t); });
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            }
+        } catch(e) {}
     }
 
-    /* 전역 상태 */
-    const EMOJIS = ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵"];
-    let students = JSON.parse(localStorage.getItem('edu_students')) || ["김민준", "이서연", "박지우", "최예준", "정윤아", "강도윤"];
-    let activeCards = {}, connections = [], mode = 'move';
+    /* ==========================================
+       데이터 및 상태 설정
+    ========================================== */
+    const EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐧"];
+    // 아카데믹하고 고급스러운 컬러 배열
+    const COLORS = ["#1e3a8a", "#0f766e", "#b45309", "#be123c", "#4338ca", "#047857", "#c2410c", "#6d28d9"];
+    
+    // 기본으로 약 24명의 학생을 세팅하여 2열 그리드 테스트 최적화
+    const defaultStudents = ["김민준","이서연","박지우","최예준","정윤아","강도윤","임하은","한주원","송지현","오민수","유진아","전진우","윤지호","박수아","이도현","김태희","정우진","최다은","강민지","조윤호","황서진","백도윤","권시연","송건우"];
+    let students = JSON.parse(localStorage.getItem('lb_students_pro')) || defaultStudents;
+    
+    let activeCards = {};
+    let connections = [];
+    let mode = 'move';
+    
     let isDrawing = false, startCardId = null, mousePos = { x: 0, y: 0 }, dashOffset = 0;
 
     const board = document.getElementById('board');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    /* 초기화 */
+    /* ==========================================
+       초기화
+    ========================================== */
     function init() {
-        document.getElementById('goalInput').value = localStorage.getItem('edu_goal') || "목표: 수익 12~13쪽 해결하기";
-        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('edu_goal', e.target.value));
+        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro') || "";
+        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro', e.target.value));
 
-        renderDock();
+        renderSidebar();
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        
+
         board.addEventListener('mousemove', handlePointerMove);
         board.addEventListener('touchmove', handlePointerMove, {passive: false});
         board.addEventListener('mouseup', handlePointerUp);
         board.addEventListener('touchend', handlePointerUp);
-        
-        requestAnimationFrame(animateCanvas);
-        document.body.addEventListener('click', () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
 
-        // 하단 독 가로 스크롤 (마우스 휠) 지원
-        const dock = document.getElementById('studentDock');
-        dock.addEventListener('wheel', (e) => {
-            if (e.deltaY !== 0) { e.preventDefault(); dock.scrollLeft += e.deltaY; }
-        });
+        requestAnimationFrame(animateCanvas);
+        
+        document.body.addEventListener('click', () => { try{ if(audioCtx) audioCtx.resume(); }catch(e){} }, {once: true});
     }
 
     function resizeCanvas() { canvas.width = board.clientWidth; canvas.height = board.clientHeight; }
 
-    function getEmoji(name) {
-        let hash = 0; for (let i = 0; i < name.length; i++) hash += name.charCodeAt(i);
-        return EMOJIS[hash % EMOJIS.length];
-    }
+    /* ==========================================
+       사이드바 (학생 2열 그리드)
+    ========================================== */
+    function getEmoji(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return EMOJIS[h % EMOJIS.length]; }
+    function getColor(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return COLORS[h % COLORS.length]; }
 
-    /* 하단 독(명단) 렌더링 */
-    function renderDock() {
-        const dock = document.getElementById('studentDock');
-        dock.innerHTML = '';
-        students.forEach((name, index) => {
-            const chip = document.createElement('div');
-            chip.className = 'student-chip';
-            chip.id = `dock-item-${index}`;
-            chip.innerHTML = `<span style="font-size:1.2rem">${getEmoji(name)}</span> <span>${name}</span>`;
-            chip.onclick = () => addCardToBoard(name, index, chip);
-            dock.appendChild(chip);
+    function renderSidebar() {
+        const list = document.getElementById('studentList');
+        list.innerHTML = '';
+        students.forEach((name, idx) => {
+            const div = document.createElement('div');
+            div.className = 'student-item';
+            div.id = `sidebar-${idx}`;
+            div.innerHTML = `<span class="student-emoji">${getEmoji(name)}</span><span class="student-name">${name}</span>`;
+            div.onclick = () => addCardToBoard(name, idx, div);
+            list.appendChild(div);
         });
+        updateProgress();
     }
 
-    /* 카드 생성 및 이벤트 */
-    function addCardToBoard(name, index, chipEl) {
-        if(chipEl.classList.contains('completed')) return;
-        playSound('pop');
-        chipEl.classList.add('completed');
+    function updateProgress() {
+        const total = students.length; const placed = Object.values(activeCards).length;
+        const pct = total ? Math.round((placed / total) * 100) : 0;
+        document.getElementById('progressText').textContent = `${placed} / ${total}명`;
+        document.getElementById('progressBar').style.width = `${pct}%`;
+    }
 
-        const cardId = 'card-' + Date.now();
+    /* ==========================================
+       카드 컨트롤 (생성 & 드래그)
+    ========================================== */
+    function addCardToBoard(name, idx, sidebarEl) {
+        if (sidebarEl.classList.contains('completed')) return;
+        playSound('pop');
+        sidebarEl.classList.add('completed');
+
+        const cardId = 'card-' + Date.now() + '-' + idx;
         const card = document.createElement('div');
         card.className = 'board-card';
         card.id = cardId;
         
-        // 보드 중앙 근처에 생성
-        const startX = (board.clientWidth / 2) - 50 + (Math.random() * 60 - 30);
-        const startY = (board.clientHeight / 2) - 65 + (Math.random() * 60 - 30);
-        card.style.left = startX + 'px'; card.style.top = startY + 'px';
-        
-        card.innerHTML = `<div class="emoji-wrap">${getEmoji(name)}</div><div class="name">${name}</div>`;
-        board.appendChild(card);
-        activeCards[cardId] = { name: name, el: card, dockId: chipEl.id };
+        const color = getColor(name);
+        card.style.setProperty('--card-color', color);
+        card.style.setProperty('--card-bg-color', color + '15'); // 15 = 투명도 
 
-        card.addEventListener('mousedown', (e) => handleCardPointerDown(e, cardId));
-        card.addEventListener('touchstart', (e) => handleCardPointerDown(e, cardId), {passive: false});
+        const cx = (board.clientWidth / 2) - 50 + (Math.random() * 80 - 40);
+        const cy = (board.clientHeight / 2) - 60 + (Math.random() * 80 - 40);
+        card.style.left = cx + 'px'; card.style.top = cy + 'px';
+
+        card.innerHTML = `
+            <div class="card-emoji">${getEmoji(name)}</div>
+            <div class="card-name">${name}</div>
+            <div class="card-badge" id="badge-${cardId}">0</div>
+        `;
+        
+        board.appendChild(card);
+        activeCards[cardId] = { name: name, el: card, sidebarId: sidebarEl.id, color: color };
+
+        card.addEventListener('mousedown', e => handleCardPointerDown(e, cardId));
+        card.addEventListener('touchstart', e => handleCardPointerDown(e, cardId), {passive: false});
+        updateProgress();
     }
 
     function handleCardPointerDown(e, cardId) {
         if (mode === 'move') {
             e.preventDefault();
-            const cardEl = activeCards[cardId].el;
+            const el = activeCards[cardId].el;
             const isTouch = e.type === 'touchstart';
-            let startX = isTouch ? e.touches[0].clientX : e.clientX;
-            let startY = isTouch ? e.touches[0].clientY : e.clientY;
-            let origX = cardEl.offsetLeft, origY = cardEl.offsetTop;
+            const sx = isTouch ? e.touches[0].clientX : e.clientX;
+            const sy = isTouch ? e.touches[0].clientY : e.clientY;
+            const ox = el.offsetLeft, oy = el.offsetTop;
 
-            function doDrag(dragEvent) {
-                if(isTouch) dragEvent.preventDefault();
-                const currentX = isTouch ? dragEvent.touches[0].clientX : dragEvent.clientX;
-                const currentY = isTouch ? dragEvent.touches[0].clientY : dragEvent.clientY;
-                cardEl.style.left = (origX + currentX - startX) + 'px';
-                cardEl.style.top = (origY + currentY - startY) + 'px';
+            function drag(ev) {
+                if (isTouch) ev.preventDefault();
+                const cx = isTouch ? ev.touches[0].clientX : ev.clientX;
+                const cy = isTouch ? ev.touches[0].clientY : ev.clientY;
+                el.style.left = (ox + cx - sx) + 'px'; el.style.top = (oy + cy - sy) + 'px';
             }
-            function stopDrag() {
-                document.removeEventListener(isTouch ? 'touchmove' : 'mousemove', doDrag);
-                document.removeEventListener(isTouch ? 'touchend' : 'mouseup', stopDrag);
+            function stop() {
+                document.removeEventListener(isTouch ? 'touchmove' : 'mousemove', drag);
+                document.removeEventListener(isTouch ? 'touchend' : 'mouseup', stop);
             }
-            document.addEventListener(isTouch ? 'touchmove' : 'mousemove', doDrag, {passive: false});
-            document.addEventListener(isTouch ? 'touchend' : 'mouseup', stopDrag);
+            document.addEventListener(isTouch ? 'touchmove' : 'mousemove', drag, {passive: false});
+            document.addEventListener(isTouch ? 'touchend' : 'mouseup', stop);
         } else if (mode === 'connect') {
             e.preventDefault(); e.stopPropagation();
             isDrawing = true; startCardId = cardId; updatePointerPos(e);
@@ -383,181 +506,237 @@
     function handlePointerMove(e) { if (isDrawing) { e.preventDefault(); updatePointerPos(e); } }
 
     function handlePointerUp(e) {
-        if (isDrawing) {
-            isDrawing = false;
-            let targetEl = e.type === 'touchend' ? document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY) : e.target;
-            const targetCard = targetEl ? targetEl.closest('.board-card') : null;
-            
-            if (targetCard && targetCard.id !== startCardId) {
-                if (!connections.find(c => c.from === startCardId && c.to === targetCard.id)) {
-                    connections.push({ from: startCardId, to: targetCard.id });
-                    playSound('connect');
-                }
+        if (!isDrawing) return;
+        isDrawing = false;
+        let target = e.target;
+        if (e.type === 'touchend') target = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        
+        const tc = target ? target.closest('.board-card') : null;
+        if (tc && tc.id !== startCardId) {
+            if (!connections.find(c => c.from === startCardId && c.to === tc.id)) {
+                connections.push({ from: startCardId, to: tc.id });
+                playSound('connect');
+                updateBadges();
             }
-            startCardId = null;
         }
+        startCardId = null;
     }
 
     function updatePointerPos(e) {
-        const rect = board.getBoundingClientRect();
-        mousePos.x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-        mousePos.y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        const r = board.getBoundingClientRect();
+        mousePos.x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        mousePos.y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
     }
 
-    /* 모드 전환 및 보드 초기화 */
-    function setMode(newMode) {
-        mode = newMode; document.body.setAttribute('data-mode', mode);
+    function updateBadges() {
+        Object.keys(activeCards).forEach(id => {
+            const badge = document.getElementById('badge-' + id);
+            if (!badge) return;
+            const count = connections.filter(c => c.from === id).length;
+            badge.textContent = count;
+            if (count > 0) badge.classList.add('visible');
+            else badge.classList.remove('visible');
+        });
+    }
+
+    /* ==========================================
+       모드 및 보드 리셋
+    ========================================== */
+    function setMode(m) {
+        mode = m; document.body.setAttribute('data-mode', mode);
         document.getElementById('btnMoveMode').classList.toggle('active', mode === 'move');
         document.getElementById('btnConnectMode').classList.toggle('active', mode === 'connect');
     }
-    function clearLines() { connections = []; }
+    function clearLines() { connections = []; updateBadges(); }
     function resetBoard() {
-        if(confirm("보드를 초기화하시겠습니까?")) {
-            Object.values(activeCards).forEach(c => c.el.remove());
-            activeCards = {}; connections = [];
-            document.querySelectorAll('.student-chip').forEach(el => el.classList.remove('completed'));
-        }
+        if (!confirm('보드를 완전히 초기화하시겠습니까?')) return;
+        Object.values(activeCards).forEach(c => c.el.remove());
+        activeCards = {}; connections = [];
+        document.querySelectorAll('.student-item').forEach(el => el.classList.remove('completed'));
+        updateProgress();
     }
 
-    /* 캔버스 드로잉 */
-    function getCardCenter(cardId) {
-        if(!activeCards[cardId]) return null;
-        const el = activeCards[cardId].el;
-        return { x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2 };
+    /* ==========================================
+       캔버스 애니메이션 (배움 곡선)
+    ========================================== */
+    function getCenter(id) {
+        const el = activeCards[id]?.el; if(!el) return null;
+        return { x: el.offsetLeft + el.offsetWidth/2, y: el.offsetTop + el.offsetHeight/2 };
     }
 
     function animateCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         dashOffset -= 0.8;
-        ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(37, 99, 235, 0.3)';
 
-        connections.forEach(conn => {
-            const p1 = getCardCenter(conn.from); const p2 = getCardCenter(conn.to);
-            if(p1 && p2) drawSmoothCurve(p1, p2, false);
+        connections.forEach(c => {
+            const p1 = getCenter(c.from), p2 = getCenter(c.to);
+            if (p1 && p2) drawCurve(p1, p2, false, activeCards[c.from].color);
         });
 
         if (isDrawing && startCardId) {
-            const p1 = getCardCenter(startCardId);
-            if(p1) drawSmoothCurve(p1, mousePos, true);
+            const p1 = getCenter(startCardId);
+            if (p1) drawCurve(p1, mousePos, true, activeCards[startCardId].color);
         }
-        ctx.shadowBlur = 0; requestAnimationFrame(animateCanvas);
+        requestAnimationFrame(animateCanvas);
     }
 
-    function drawSmoothCurve(p1, p2, isTemp) {
+    function drawCurve(p1, p2, isTemp, color) {
         const dx = p2.x - p1.x, dy = p2.y - p1.y, dist = Math.sqrt(dx*dx + dy*dy);
-        const curveOffset = Math.min(dist * 0.25, 100); 
-        const cp1x = p1.x + dx/2 - dy/dist * curveOffset, cp1y = p1.y + dy/2 + dx/dist * curveOffset;
+        if (dist < 1) return;
+        
+        const offset = Math.min(dist * 0.25, 100);
+        const cp1x = p1.x + dx/2 - dy/dist * offset, cp1y = p1.y + dy/2 + dx/dist * offset;
 
         ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.quadraticCurveTo(cp1x, cp1y, p2.x, p2.y);
 
         if (isTemp) {
-            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 4; ctx.setLineDash([10, 10]); ctx.stroke();
+            ctx.strokeStyle = color; ctx.globalAlpha = 0.4;
+            ctx.lineWidth = 3; ctx.setLineDash([8, 8]); ctx.stroke();
+            ctx.globalAlpha = 1.0;
         } else {
-            ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 4; ctx.setLineDash([12, 12]);
-            ctx.lineDashOffset = dashOffset; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.strokeStyle = color; ctx.lineWidth = 3.5;
+            ctx.setLineDash([12, 12]); ctx.lineDashOffset = dashOffset; ctx.lineCap = 'round';
+            ctx.stroke();
 
-            const t = 0.85; 
-            const arrowX = (1-t)*(1-t)*p1.x + 2*(1-t)*t*cp1x + t*t*p2.x;
-            const arrowY = (1-t)*(1-t)*p1.y + 2*(1-t)*t*cp1y + t*t*p2.y;
-            const tx = 2*(1-t)*(cp1x - p1.x) + 2*t*(p2.x - cp1x), ty = 2*(1-t)*(cp1y - p1.y) + 2*t*(p2.y - cp1y);
+            // 세련된 화살표
+            const t = 0.88;
+            const ax = (1-t)*(1-t)*p1.x + 2*(1-t)*t*cp1x + t*t*p2.x;
+            const ay = (1-t)*(1-t)*p1.y + 2*(1-t)*t*cp1y + t*t*p2.y;
+            const tx = 2*(1-t)*(cp1x-p1.x) + 2*t*(p2.x-cp1x), ty = 2*(1-t)*(cp1y-p1.y) + 2*t*(p2.y-cp1y);
             const angle = Math.atan2(ty, tx);
 
-            ctx.beginPath(); ctx.setLineDash([]); ctx.moveTo(arrowX, arrowY);
-            ctx.lineTo(arrowX - 14 * Math.cos(angle - Math.PI / 7), arrowY - 14 * Math.sin(angle - Math.PI / 7));
-            ctx.lineTo(arrowX - 14 * Math.cos(angle + Math.PI / 7), arrowY - 14 * Math.sin(angle + Math.PI / 7));
-            ctx.closePath(); ctx.fillStyle = '#2563eb'; ctx.fill();
+            ctx.beginPath(); ctx.setLineDash([]); ctx.moveTo(ax, ay);
+            ctx.lineTo(ax - 14*Math.cos(angle-Math.PI/7), ay - 14*Math.sin(angle-Math.PI/7));
+            ctx.lineTo(ax - 14*Math.cos(angle+Math.PI/7), ay - 14*Math.sin(angle+Math.PI/7));
+            ctx.closePath(); ctx.fillStyle = color; ctx.fill();
         }
+        ctx.setLineDash([]);
     }
 
-    /* 심플 타이머 로직 */
-    let timeTotalSeconds = 20 * 60;
-    let timeRemaining = timeTotalSeconds;
+    /* ==========================================
+       타이머 시스템 (애플 스타일 + 일시정지)
+    ========================================== */
+    let totalSeconds = 20 * 60;
+    let timeRemaining = totalSeconds;
     let timerInterval = null, isPlaying = false;
-    const timeDisplay = document.getElementById('timeDisplay');
-    const playBtn = document.getElementById('playBtn');
 
-    function updateTimeDisplay() {
-        const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
-        const s = (timeRemaining % 60).toString().padStart(2, '0');
-        timeDisplay.innerText = `${m}:${s}`;
-        timeDisplay.classList.toggle('warning', timeRemaining <= 60 && timeRemaining > 0);
+    function updateTimerDisplay() {
+        const m = String(Math.floor(timeRemaining / 60)).padStart(2, '0');
+        const s = String(timeRemaining % 60).padStart(2, '0');
+        const display = document.getElementById('timeDisplay');
+        display.textContent = `${m}:${s}`;
+        display.classList.toggle('warning', timeRemaining <= 60 && timeRemaining > 0);
     }
 
-    // 시간 직접 클릭해서 설정
     function setTimeManually() {
-        if(isPlaying) toggleTimer(); // 설정 시 일시정지
-        const inputStr = prompt("타이머 시간을 분 단위로 입력하세요 (예: 15)", Math.floor(timeTotalSeconds / 60));
-        if (inputStr !== null && !isNaN(inputStr) && inputStr.trim() !== "") {
-            const mins = parseInt(inputStr, 10);
-            if (mins > 0) {
-                timeTotalSeconds = mins * 60;
-                timeRemaining = timeTotalSeconds;
-                updateTimeDisplay();
-            }
+        if(isPlaying) toggleTimer(); // 일시정지
+        const input = prompt("설정할 시간을 분 단위로 입력하세요 (예: 15)", Math.floor(timeRemaining / 60));
+        if (input && !isNaN(input) && parseInt(input) > 0) {
+            timeRemaining = parseInt(input) * 60;
+            updateTimerDisplay();
         }
+    }
+
+    function adjustTime(min) {
+        timeRemaining = Math.max(0, timeRemaining + min * 60);
+        updateTimerDisplay();
     }
 
     function toggleTimer() {
-        if(isPlaying) {
-            clearInterval(timerInterval); playBtn.innerHTML = '▶';
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+
+        if (isPlaying) {
+            clearInterval(timerInterval);
+            iconPlay.style.display = 'block'; iconPause.style.display = 'none'; // 아이콘 전환
         } else {
-            if(timeRemaining <= 0) return;
+            if (timeRemaining <= 0) return;
             timerInterval = setInterval(() => {
-                timeRemaining--; updateTimeDisplay();
-                if(timeRemaining <= 0) {
-                    clearInterval(timerInterval); toggleTimer();
-                    alert("⏰ 시간이 종료되었습니다!");
+                timeRemaining--; updateTimerDisplay();
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval); isPlaying = false;
+                    iconPlay.style.display = 'block'; iconPause.style.display = 'none';
+                    playSound('alert');
+                    setTimeout(() => alert("⏰ 시간이 종료되었습니다!"), 100);
                 }
             }, 1000);
-            playBtn.innerHTML = '⏸';
+            iconPlay.style.display = 'none'; iconPause.style.display = 'block';
         }
         isPlaying = !isPlaying;
     }
 
     function resetTimer() {
         clearInterval(timerInterval); isPlaying = false;
-        playBtn.innerHTML = '▶'; timeRemaining = timeTotalSeconds;
-        updateTimeDisplay();
+        document.getElementById('icon-play').style.display = 'block'; 
+        document.getElementById('icon-pause').style.display = 'none';
+        timeRemaining = 20 * 60;
+        updateTimerDisplay();
     }
 
-    /* 명단 관리 및 인사이트 */
-    function saveStudents() { localStorage.setItem('edu_students', JSON.stringify(students)); renderDock(); renderEditList(); }
-    function addStudent() {
-        const input = document.getElementById('newStudentName');
-        if(input.value.trim()) { students.push(input.value.trim()); input.value = ''; saveStudents(); }
+    /* ==========================================
+       모달 & 인사이트
+    ========================================== */
+    function openModal(id) {
+        if (id === 'studentModal') renderEditList();
+        const el = document.getElementById(id);
+        el.style.display = 'flex';
+        requestAnimationFrame(() => el.classList.add('active'));
     }
-    function deleteStudent(index) { students.splice(index, 1); saveStudents(); }
+
+    function closeModal(id) {
+        const el = document.getElementById(id);
+        el.classList.remove('active');
+        setTimeout(() => { if (!el.classList.contains('active')) el.style.display = 'none'; }, 300);
+    }
 
     function renderEditList() {
-        const list = document.getElementById('editStudentList'); list.innerHTML = '';
-        students.forEach((name, i) => {
-            list.innerHTML += `<div class="edit-item"><span>${name}</span> <button class="close-btn" style="color:var(--accent); font-size:1.2rem;" onclick="deleteStudent(${i})">✕</button></div>`;
-        });
+        const list = document.getElementById('editStudentList');
+        list.innerHTML = students.map((n, i) => `
+            <div class="edit-item">
+                <span>${getEmoji(n)} ${n}</span>
+                <button class="icon-btn" style="color:var(--accent); width:28px; height:28px;" onclick="deleteStudent(${i})">✕</button>
+            </div>
+        `).join('');
     }
 
+    function saveStudents() {
+        localStorage.setItem('lb_students_pro', JSON.stringify(students));
+        renderSidebar(); renderEditList();
+    }
+
+    function addStudent() {
+        const inp = document.getElementById('newStudentName');
+        if (inp.value.trim()) { students.push(inp.value.trim()); inp.value = ''; saveStudents(); }
+    }
+    function deleteStudent(i) { students.splice(i, 1); saveStudents(); }
+
     function showInsights() {
-        const counts = {}; connections.forEach(c => { counts[c.from] = (counts[c.from] || 0) + 1; });
-        let stats = Object.keys(activeCards).map(id => ({ name: activeCards[id].name, count: counts[id] || 0 })).sort((a, b) => b.count - a.count);
-        const list = document.getElementById('insightList'); list.innerHTML = '';
-        
-        if(!stats.length || stats[0].count === 0) {
-            list.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">아직 나눔 기록이 없습니다.</div>';
+        const counts = {};
+        connections.forEach(c => { counts[c.from] = (counts[c.from] || 0) + 1; });
+
+        const stats = Object.keys(activeCards).map(id => ({
+            name: activeCards[id].name, color: activeCards[id].color, count: counts[id] || 0
+        })).filter(s => s.count > 0).sort((a, b) => b.count - a.count);
+
+        const list = document.getElementById('insightList');
+        if (!stats.length) {
+            list.innerHTML = '<div style="text-align:center; padding:40px; color:var(--ink-light);">아직 나누어진 배움이 없습니다.</div>';
         } else {
-            stats.forEach((s, i) => {
-                if(s.count > 0) {
-                    const rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
-                    list.innerHTML += `<div class="edit-item" style="align-items:center;">
-                        <div><span style="font-size:1.2rem; width:30px; display:inline-block;">${rank}</span> ${s.name}</div>
-                        <div style="color:var(--primary);">${s.count}회 나눔</div>
-                    </div>`;
-                }
-            });
+            const max = stats[0].count;
+            const medals = ['🥇','🥈','🥉'];
+            list.innerHTML = stats.map((s, i) => `
+                <div class="insight-row">
+                    <div class="insight-medal">${i < 3 ? medals[i] : `<span style="font-size:1.1rem; color:var(--ink-light)">${i+1}</span>`}</div>
+                    <div class="insight-info">
+                        <div class="insight-name">${s.name}</div>
+                        <div class="insight-bar-bg"><div class="insight-bar-fill" style="width:${(s.count/max)*100}%; background:${s.color};"></div></div>
+                    </div>
+                    <div class="insight-count">${s.count}회</div>
+                </div>
+            `).join('');
         }
         openModal('insightModal');
     }
-
-    function openModal(id) { if(id === 'studentModal') renderEditList(); document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
     window.onload = init;
 </script>
