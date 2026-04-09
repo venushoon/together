@@ -368,30 +368,35 @@
     /* ==========================================
        데이터 및 상태 설정
     ========================================== */
-    const EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐢","🐸","🐵","🐧","🐥","🐬","🦔","🐿️","🦉","🦄"];
+    // 총 20개의 동물 이모지 풀
+    const EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐢","🐸","🐵","🐧","🐥","🐬","🦔","🦉"];
     
-    // 16개의 다채롭고 뚜렷한 색상으로 대폭 확대
+    // 서로 확연히 구분되는 20가지 고대비 색상 팔레트 (해시 충돌 방지 및 다채로움 극대화)
     const COLORS = [
-        "#dc2626", // Red
-        "#ea580c", // Orange
-        "#d97706", // Amber
-        "#65a30d", // Lime
-        "#16a34a", // Green
-        "#059669", // Emerald
-        "#0d9488", // Teal
-        "#0891b2", // Cyan
-        "#0284c7", // Light Blue
-        "#2563eb", // Blue
-        "#4f46e5", // Indigo
-        "#7c3aed", // Violet
-        "#9333ea", // Purple
-        "#c026d3", // Fuchsia
-        "#db2777", // Pink
-        "#e11d48"  // Rose
+        "#ef4444", // Red
+        "#3b82f6", // Blue
+        "#22c55e", // Green
+        "#f97316", // Orange
+        "#8b5cf6", // Violet
+        "#14b8a6", // Teal
+        "#ec4899", // Pink
+        "#eab308", // Yellow
+        "#06b6d4", // Cyan
+        "#6366f1", // Indigo
+        "#84cc16", // Lime
+        "#f43f5e", // Rose
+        "#10b981", // Emerald
+        "#a855f7", // Purple
+        "#f59e0b", // Amber
+        "#0ea5e9", // Sky
+        "#d946ef", // Fuchsia
+        "#16a34a", // Dark Green
+        "#dc2626", // Dark Red
+        "#4f46e5"  // Deep Indigo
     ];
     
     const defaultStudents = ["김민준","이서연","박지우","최예준","정윤아","강도윤","임하은","한주원","송지현","오민수","유진아","전진우","윤지호","박수아","이도현","김태희","정우진","최다은","강민지","조윤호","황서진","백도윤","권시연","송건우"];
-    let students = JSON.parse(localStorage.getItem('lb_students_pro3')) || defaultStudents;
+    let students = JSON.parse(localStorage.getItem('lb_students_pro4')) || defaultStudents;
     
     let activeCards = {};
     let connections = [];
@@ -408,8 +413,8 @@
        초기화
     ========================================== */
     function init() {
-        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro3') || "";
-        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro3', e.target.value));
+        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro4') || "";
+        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro4', e.target.value));
 
         renderSidebar();
         resizeCanvas();
@@ -430,19 +435,11 @@
     function resizeCanvas() { canvas.width = board.clientWidth; canvas.height = board.clientHeight; }
 
     /* ==========================================
-       사이드바 & 해시 함수 (이름 분산 강화)
+       사이드바 (순차적 배정 알고리즘 적용)
     ========================================== */
-    // 강력한 해시 함수로 한국어 3글자 이름도 완벽히 분산
-    function getStringHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return Math.abs(hash);
-    }
-    
-    function getEmoji(name) { return EMOJIS[getStringHash(name) % EMOJIS.length]; }
-    function getColor(name) { return COLORS[getStringHash(name) % COLORS.length]; }
+    // 랜덤(해시) 대신 리스트의 인덱스 번호를 기반으로 차례대로 색상과 캐릭터를 배정합니다.
+    function getEmoji(idx) { return EMOJIS[idx % EMOJIS.length]; }
+    function getColor(idx) { return COLORS[idx % COLORS.length]; }
 
     function renderSidebar() {
         const list = document.getElementById('studentList');
@@ -451,7 +448,8 @@
             const div = document.createElement('div');
             div.className = 'student-item';
             div.id = `sidebar-${idx}`;
-            div.innerHTML = `<span class="student-emoji">${getEmoji(name)}</span><span class="student-name">${name}</span>`;
+            // 이름과 함께 인덱스(idx)를 전달하여 중복 없는 색상/캐릭터 획득
+            div.innerHTML = `<span class="student-emoji">${getEmoji(idx)}</span><span class="student-name">${name}</span>`;
             div.onclick = () => addCardToBoard(name, idx, div);
             list.appendChild(div);
         });
@@ -478,7 +476,8 @@
         card.className = 'board-card';
         card.id = cardId;
         
-        const color = getColor(name);
+        // 인덱스를 기반으로 절대 겹치지 않는 색상 추출
+        const color = getColor(idx);
         card.style.setProperty('--card-color', color);
         card.style.setProperty('--card-bg-color', color + '15'); 
 
@@ -487,7 +486,7 @@
         card.style.left = cx + 'px'; card.style.top = cy + 'px';
 
         card.innerHTML = `
-            <div class="card-emoji">${getEmoji(name)}</div>
+            <div class="card-emoji">${getEmoji(idx)}</div>
             <div class="card-name">${name}</div>
             <div class="card-badge" id="badge-${cardId}">0</div>
         `;
@@ -603,7 +602,6 @@
             if (!badge) return;
             const count = connections.filter(c => c.from === id).length;
             badge.textContent = count;
-            // 배지 색상도 카드의 고유 색상과 맞춤
             badge.style.backgroundColor = activeCards[id].color;
             if (count > 0) badge.classList.add('visible');
             else badge.classList.remove('visible');
@@ -640,7 +638,6 @@
 
         connections.forEach(c => {
             const p1 = getCenter(c.from), p2 = getCenter(c.to);
-            // 선의 색상은 출발하는 카드(c.from)의 색상으로 통일
             if (p1 && p2) drawCurve(p1, p2, false, activeCards[c.from].color);
         });
 
@@ -765,14 +762,14 @@
         const list = document.getElementById('editStudentList');
         list.innerHTML = students.map((n, i) => `
             <div class="edit-item">
-                <span>${getEmoji(n)} ${n}</span>
+                <span>${getEmoji(i)} ${n}</span>
                 <button class="icon-btn" style="color:var(--accent); width:28px; height:28px;" onclick="deleteStudent(${i})">✕</button>
             </div>
         `).join('');
     }
 
     function saveStudents() {
-        localStorage.setItem('lb_students_pro3', JSON.stringify(students));
+        localStorage.setItem('lb_students_pro4', JSON.stringify(students));
         renderSidebar(); renderEditList();
     }
 
