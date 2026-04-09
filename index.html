@@ -67,11 +67,9 @@
 
     .student-list-container {
         padding: 16px; overflow-y: auto; flex-grow: 1;
-        /* 핵심: 2열 그리드 적용하여 한 화면에 많은 학생 표시 */
         display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start;
     }
     
-    /* 스크롤바 미려하게 */
     .student-list-container::-webkit-scrollbar { width: 6px; }
     .student-list-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
@@ -86,7 +84,6 @@
     .student-emoji { font-size: 1.1rem; }
     .student-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* 사이드바 하단 프로그레스바 */
     .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); background: #fafafa; }
     .progress-text { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: var(--ink-light); margin-bottom: 8px; }
     .progress-bar { height: 6px; background: var(--border); border-radius: var(--radius-full); overflow: hidden; }
@@ -100,14 +97,14 @@
         background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 24px 24px;
     }
 
-    canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+    /* 캔버스 (화살표 클릭 기능을 위해 pointer-events를 auto로 변경) */
+    canvas { position: absolute; top: 0; left: 0; pointer-events: auto; z-index: 1; cursor: crosshair; }
 
     #top-bar {
         position: absolute; top: 20px; left: 20px; right: 20px;
         display: flex; gap: 16px; z-index: 20; pointer-events: none;
     }
 
-    /* 목표 입력 박스 */
     .goal-widget {
         background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
         padding: 16px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
@@ -121,7 +118,6 @@
     }
     .goal-input::placeholder { color: #94a3b8; font-weight: 500; }
 
-    /* 프리미엄 타이머 (애플 스타일 UI) */
     .timer-widget {
         background: var(--surface); padding: 8px 16px 8px 24px; border-radius: 100px;
         box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 20px;
@@ -144,10 +140,7 @@
     }
     .timer-btn:hover { background: var(--border); color: var(--ink); }
     
-    /* 재생/일시정지 메인 버튼 */
-    .play-pause-btn {
-        width: 44px; height: 44px; background: var(--navy); color: white; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
-    }
+    .play-pause-btn { width: 44px; height: 44px; background: var(--navy); color: white; box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3); }
     .play-pause-btn:hover { background: #172554; transform: scale(1.05); }
     .play-pause-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
@@ -182,7 +175,6 @@
         transform-origin: center; animation: cardPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* 카드 상단 컬러 라인 */
     .board-card::before {
         content: ''; position: absolute; top: -2px; left: 20px; right: 20px; height: 4px;
         border-radius: 0 0 4px 4px; background: var(--card-color, var(--navy)); transition: background 0.2s;
@@ -194,7 +186,6 @@
     }
     .card-name { font-weight: 700; color: var(--ink); font-size: 0.9rem; text-align: center; }
     
-    /* 도움 횟수 배지 */
     .card-badge {
         position: absolute; top: -8px; right: -8px; background: var(--navy); color: white;
         font-size: 0.75rem; font-weight: 800; min-width: 24px; height: 24px; border-radius: 12px;
@@ -296,7 +287,7 @@
 
         <div class="bottom-toolbar">
             <button class="tool-btn active" id="btnMoveMode" onclick="setMode('move')">🖐️ 이동</button>
-            <button class="tool-btn" id="btnConnectMode" onclick="setMode('connect')">🔗 배움 릴레이</button>
+            <button class="tool-btn" id="btnConnectMode" onclick="setMode('connect')">↗️ 배움 릴레이</button>
             <div class="divider"></div>
             <button class="tool-btn" onclick="showInsights()">📊 인사이트</button>
             <div class="divider"></div>
@@ -373,19 +364,18 @@
     /* ==========================================
        데이터 및 상태 설정
     ========================================== */
-    const EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐧"];
-    // 아카데믹하고 고급스러운 컬러 배열
+    // 🐷 삭제 및 🐥🐢🐬 추가 반영 완료
+    const EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐢","🐸","🐵","🐧","🐥","🐬"];
     const COLORS = ["#1e3a8a", "#0f766e", "#b45309", "#be123c", "#4338ca", "#047857", "#c2410c", "#6d28d9"];
     
-    // 기본으로 약 24명의 학생을 세팅하여 2열 그리드 테스트 최적화
     const defaultStudents = ["김민준","이서연","박지우","최예준","정윤아","강도윤","임하은","한주원","송지현","오민수","유진아","전진우","윤지호","박수아","이도현","김태희","정우진","최다은","강민지","조윤호","황서진","백도윤","권시연","송건우"];
-    let students = JSON.parse(localStorage.getItem('lb_students_pro')) || defaultStudents;
+    let students = JSON.parse(localStorage.getItem('lb_students_pro2')) || defaultStudents;
     
     let activeCards = {};
     let connections = [];
     let mode = 'move';
     
-    let isDrawing = false, startCardId = null, mousePos = { x: 0, y: 0 }, dashOffset = 0;
+    let isDrawing = false, startCardId = null, mousePos = { x: 0, y: 0 };
 
     const board = document.getElementById('board');
     const canvas = document.getElementById('canvas');
@@ -395,8 +385,8 @@
        초기화
     ========================================== */
     function init() {
-        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro') || "";
-        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro', e.target.value));
+        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro2') || "";
+        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro2', e.target.value));
 
         renderSidebar();
         resizeCanvas();
@@ -406,6 +396,9 @@
         board.addEventListener('touchmove', handlePointerMove, {passive: false});
         board.addEventListener('mouseup', handlePointerUp);
         board.addEventListener('touchend', handlePointerUp);
+        
+        // 캔버스 클릭 이벤트 (화살표 삭제 기능)
+        board.addEventListener('click', handleBoardClick);
 
         requestAnimationFrame(animateCanvas);
         
@@ -415,7 +408,7 @@
     function resizeCanvas() { canvas.width = board.clientWidth; canvas.height = board.clientHeight; }
 
     /* ==========================================
-       사이드바 (학생 2열 그리드)
+       사이드바
     ========================================== */
     function getEmoji(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return EMOJIS[h % EMOJIS.length]; }
     function getColor(name) { let h=0; for(let c of name) h+=c.charCodeAt(0); return COLORS[h % COLORS.length]; }
@@ -456,7 +449,7 @@
         
         const color = getColor(name);
         card.style.setProperty('--card-color', color);
-        card.style.setProperty('--card-bg-color', color + '15'); // 15 = 투명도 
+        card.style.setProperty('--card-bg-color', color + '15'); 
 
         const cx = (board.clientWidth / 2) - 50 + (Math.random() * 80 - 40);
         const cy = (board.clientHeight / 2) - 60 + (Math.random() * 80 - 40);
@@ -528,6 +521,49 @@
         mousePos.y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
     }
 
+    /* ==========================================
+       배움 화살표 개별 삭제 (Click Event)
+    ========================================== */
+    function handleBoardClick(e) {
+        // 카드를 클릭한 경우는 무시
+        if (e.target.closest('.board-card')) return;
+        
+        const r = board.getBoundingClientRect();
+        const mx = e.clientX - r.left;
+        const my = e.clientY - r.top;
+        
+        let clickedIdx = -1;
+        for (let i = 0; i < connections.length; i++) {
+            const p1 = getCenter(connections[i].from);
+            const p2 = getCenter(connections[i].to);
+            if (p1 && p2) {
+                const dx = p2.x - p1.x, dy = p2.y - p1.y, dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 1) continue;
+                const offset = Math.min(dist * 0.25, 100);
+                const cp1x = p1.x + dx/2 - dy/dist * offset, cp1y = p1.y + dy/2 + dx/dist * offset;
+                
+                let hit = false;
+                // 베지어 곡선을 따라 점을 찍으며 마우스 클릭 위치와 비교 (충돌 판정)
+                for (let t = 0; t <= 1; t += 0.05) {
+                    const x = (1-t)*(1-t)*p1.x + 2*(1-t)*t*cp1x + t*t*p2.x;
+                    const y = (1-t)*(1-t)*p1.y + 2*(1-t)*t*cp1y + t*t*p2.y;
+                    if (Math.sqrt((x-mx)**2 + (y-my)**2) < 15) { // 15px 오차 허용
+                        hit = true; break;
+                    }
+                }
+                if (hit) { clickedIdx = i; break; }
+            }
+        }
+        
+        if (clickedIdx !== -1) {
+            if(confirm("이 배움 연결(화살표)을 삭제할까요?")) {
+                connections.splice(clickedIdx, 1);
+                playSound('pop');
+                updateBadges();
+            }
+        }
+    }
+
     function updateBadges() {
         Object.keys(activeCards).forEach(id => {
             const badge = document.getElementById('badge-' + id);
@@ -557,7 +593,7 @@
     }
 
     /* ==========================================
-       캔버스 애니메이션 (배움 곡선)
+       캔버스 (정적 실선 곡선 - 시선 분산 방지)
     ========================================== */
     function getCenter(id) {
         const el = activeCards[id]?.el; if(!el) return null;
@@ -566,7 +602,6 @@
 
     function animateCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        dashOffset -= 0.8;
 
         connections.forEach(c => {
             const p1 = getCenter(c.from), p2 = getCenter(c.to);
@@ -594,11 +629,12 @@
             ctx.lineWidth = 3; ctx.setLineDash([8, 8]); ctx.stroke();
             ctx.globalAlpha = 1.0;
         } else {
+            // 움직임이 없는 깔끔한 실선
             ctx.strokeStyle = color; ctx.lineWidth = 3.5;
-            ctx.setLineDash([12, 12]); ctx.lineDashOffset = dashOffset; ctx.lineCap = 'round';
+            ctx.setLineDash([]); ctx.lineCap = 'round';
             ctx.stroke();
 
-            // 세련된 화살표
+            // 화살표 머리
             const t = 0.88;
             const ax = (1-t)*(1-t)*p1.x + 2*(1-t)*t*cp1x + t*t*p2.x;
             const ay = (1-t)*(1-t)*p1.y + 2*(1-t)*t*cp1y + t*t*p2.y;
@@ -614,7 +650,7 @@
     }
 
     /* ==========================================
-       타이머 시스템 (애플 스타일 + 일시정지)
+       타이머 시스템 
     ========================================== */
     let totalSeconds = 20 * 60;
     let timeRemaining = totalSeconds;
@@ -629,7 +665,7 @@
     }
 
     function setTimeManually() {
-        if(isPlaying) toggleTimer(); // 일시정지
+        if(isPlaying) toggleTimer();
         const input = prompt("설정할 시간을 분 단위로 입력하세요 (예: 15)", Math.floor(timeRemaining / 60));
         if (input && !isNaN(input) && parseInt(input) > 0) {
             timeRemaining = parseInt(input) * 60;
@@ -648,7 +684,7 @@
 
         if (isPlaying) {
             clearInterval(timerInterval);
-            iconPlay.style.display = 'block'; iconPause.style.display = 'none'; // 아이콘 전환
+            iconPlay.style.display = 'block'; iconPause.style.display = 'none';
         } else {
             if (timeRemaining <= 0) return;
             timerInterval = setInterval(() => {
@@ -700,7 +736,7 @@
     }
 
     function saveStudents() {
-        localStorage.setItem('lb_students_pro', JSON.stringify(students));
+        localStorage.setItem('lb_students_pro2', JSON.stringify(students));
         renderSidebar(); renderEditList();
     }
 
