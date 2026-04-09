@@ -10,7 +10,6 @@
 
 <style>
     :root {
-        /* 세련된 아카데믹 컬러 팔레트 */
         --ink: #1e293b;
         --ink-light: #475569;
         --paper: #f8fafc;
@@ -42,7 +41,7 @@
     #app { display: flex; height: 100vh; }
 
     /* ─────────────────────────────────────────
-       SIDEBAR (소외되는 학생 없는 2열 그리드)
+       SIDEBAR
     ───────────────────────────────────────── */
     #sidebar {
         width: 320px; background: var(--surface); border-right: 1px solid var(--border);
@@ -97,7 +96,6 @@
         background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size: 24px 24px;
     }
 
-    /* 캔버스 (화살표 클릭 기능을 위해 pointer-events를 auto로 변경) */
     canvas { position: absolute; top: 0; left: 0; pointer-events: auto; z-index: 1; cursor: crosshair; }
 
     #top-bar {
@@ -145,28 +143,40 @@
     .play-pause-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
     /* ─────────────────────────────────────────
-       BOTTOM TOOLBAR
+       BOTTOM TOOLBAR (반응형 최적화)
     ───────────────────────────────────────── */
     .bottom-toolbar {
         position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
         background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
         padding: 8px; border-radius: 100px; box-shadow: var(--shadow-lg);
         display: flex; gap: 4px; z-index: 20; border: 1px solid var(--border);
+        max-width: 95%; /* 화면 넘침 방지 */
+        overflow-x: auto; /* 좁을 경우 스크롤 허용 */
+        white-space: nowrap;
+        scrollbar-width: none; /* 파이어폭스 스크롤바 숨김 */
     }
+    .bottom-toolbar::-webkit-scrollbar { display: none; }
 
     .tool-btn {
         padding: 12px 24px; border: none; border-radius: 100px; font-weight: 700; font-size: 0.95rem;
         cursor: pointer; display: flex; align-items: center; gap: 8px; background: transparent;
         color: var(--ink-light); transition: all 0.2s ease;
+        white-space: nowrap; flex-shrink: 0; /* 글자 줄바꿈 방지 */
     }
     .tool-btn:hover { background: var(--paper); color: var(--ink); }
     .tool-btn.active { background: var(--navy); color: white; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25); }
     .tool-btn.danger { color: var(--accent); }
     .tool-btn.danger:hover { background: #fff1f2; }
-    .divider { width: 1px; height: 24px; background: var(--border); margin: auto 4px; }
+    .divider { width: 1px; height: 24px; background: var(--border); margin: auto 4px; flex-shrink: 0; }
+
+    /* 모바일 작은 화면 대응 */
+    @media (max-width: 768px) {
+        .bottom-toolbar { padding: 6px; justify-content: flex-start; }
+        .tool-btn { padding: 10px 16px; font-size: 0.85rem; }
+    }
 
     /* ─────────────────────────────────────────
-       STUDENT CARDS (Board)
+       STUDENT CARDS
     ───────────────────────────────────────── */
     .board-card {
         position: absolute; width: 100px; background: var(--surface); border-radius: var(--radius-lg);
@@ -202,7 +212,7 @@
     @keyframes cardPop { 0% { transform: scale(0.5) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-    /* 모달 공통 */
+    /* 모달 */
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
         display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: 0.2s;
@@ -273,12 +283,10 @@
                 <div class="time-display" id="timeDisplay" onclick="setTimeManually()" title="클릭하여 시간 설정">20:00</div>
                 <div class="timer-controls">
                     <button class="timer-btn" onclick="adjustTime(-1)">-1</button>
-                    
                     <button class="timer-btn play-pause-btn" id="playBtn" onclick="toggleTimer()">
                         <svg id="icon-play" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         <svg id="icon-pause" viewBox="0 0 24 24" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
-                    
                     <button class="timer-btn" onclick="resetTimer()" title="초기화">↺</button>
                     <button class="timer-btn" onclick="adjustTime(1)">+1</button>
                 </div>
@@ -364,18 +372,19 @@
     /* ==========================================
        데이터 및 상태 설정
     ========================================== */
-    // 🐷 삭제 및 🐥🐢🐬 추가 반영 완료
+    // 돼지 삭제 및 귀여운 동물(병아리, 거북이, 돌고래 등) 추가 반영
     const EMOJIS = ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐢","🐸","🐵","🐧","🐥","🐬"];
     const COLORS = ["#1e3a8a", "#0f766e", "#b45309", "#be123c", "#4338ca", "#047857", "#c2410c", "#6d28d9"];
     
     const defaultStudents = ["김민준","이서연","박지우","최예준","정윤아","강도윤","임하은","한주원","송지현","오민수","유진아","전진우","윤지호","박수아","이도현","김태희","정우진","최다은","강민지","조윤호","황서진","백도윤","권시연","송건우"];
-    let students = JSON.parse(localStorage.getItem('lb_students_pro2')) || defaultStudents;
+    let students = JSON.parse(localStorage.getItem('lb_students_pro3')) || defaultStudents;
     
     let activeCards = {};
     let connections = [];
     let mode = 'move';
     
     let isDrawing = false, startCardId = null, mousePos = { x: 0, y: 0 };
+    let justConnected = false; // 선 긋기 직후 팝업 방지용 플래그
 
     const board = document.getElementById('board');
     const canvas = document.getElementById('canvas');
@@ -385,8 +394,8 @@
        초기화
     ========================================== */
     function init() {
-        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro2') || "";
-        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro2', e.target.value));
+        document.getElementById('goalInput').value = localStorage.getItem('lb_goal_pro3') || "";
+        document.getElementById('goalInput').addEventListener('input', e => localStorage.setItem('lb_goal_pro3', e.target.value));
 
         renderSidebar();
         resizeCanvas();
@@ -510,6 +519,10 @@
                 connections.push({ from: startCardId, to: tc.id });
                 playSound('connect');
                 updateBadges();
+                
+                // 선 긋기가 끝난 직후 클릭 이벤트(삭제팝업)가 실행되는 것을 방지
+                justConnected = true;
+                setTimeout(() => { justConnected = false; }, 200); 
             }
         }
         startCardId = null;
@@ -525,7 +538,9 @@
        배움 화살표 개별 삭제 (Click Event)
     ========================================== */
     function handleBoardClick(e) {
-        // 카드를 클릭한 경우는 무시
+        // 방금 선을 그은 직후라면 무시
+        if (justConnected) return;
+        // 카드를 클릭한 경우 무시
         if (e.target.closest('.board-card')) return;
         
         const r = board.getBoundingClientRect();
@@ -543,11 +558,11 @@
                 const cp1x = p1.x + dx/2 - dy/dist * offset, cp1y = p1.y + dy/2 + dx/dist * offset;
                 
                 let hit = false;
-                // 베지어 곡선을 따라 점을 찍으며 마우스 클릭 위치와 비교 (충돌 판정)
+                // 베지어 곡선을 따라 점을 찍으며 마우스 클릭 위치와 비교 (오차 허용범위 20px로 넉넉하게)
                 for (let t = 0; t <= 1; t += 0.05) {
                     const x = (1-t)*(1-t)*p1.x + 2*(1-t)*t*cp1x + t*t*p2.x;
                     const y = (1-t)*(1-t)*p1.y + 2*(1-t)*t*cp1y + t*t*p2.y;
-                    if (Math.sqrt((x-mx)**2 + (y-my)**2) < 15) { // 15px 오차 허용
+                    if (Math.sqrt((x-mx)**2 + (y-my)**2) < 20) { 
                         hit = true; break;
                     }
                 }
@@ -634,16 +649,19 @@
             ctx.setLineDash([]); ctx.lineCap = 'round';
             ctx.stroke();
 
-            // 화살표 머리
-            const t = 0.88;
+            // 화살표 머리 위치 조정: 선의 중간 (t=0.55) 즈음에 크게 그리기
+            const t = 0.55; 
             const ax = (1-t)*(1-t)*p1.x + 2*(1-t)*t*cp1x + t*t*p2.x;
             const ay = (1-t)*(1-t)*p1.y + 2*(1-t)*t*cp1y + t*t*p2.y;
+            
             const tx = 2*(1-t)*(cp1x-p1.x) + 2*t*(p2.x-cp1x), ty = 2*(1-t)*(cp1y-p1.y) + 2*t*(p2.y-cp1y);
             const angle = Math.atan2(ty, tx);
 
+            // 화살표 크기 키움 (14 -> 16)
+            const arrowSize = 16;
             ctx.beginPath(); ctx.setLineDash([]); ctx.moveTo(ax, ay);
-            ctx.lineTo(ax - 14*Math.cos(angle-Math.PI/7), ay - 14*Math.sin(angle-Math.PI/7));
-            ctx.lineTo(ax - 14*Math.cos(angle+Math.PI/7), ay - 14*Math.sin(angle+Math.PI/7));
+            ctx.lineTo(ax - arrowSize*Math.cos(angle-Math.PI/6), ay - arrowSize*Math.sin(angle-Math.PI/6));
+            ctx.lineTo(ax - arrowSize*Math.cos(angle+Math.PI/6), ay - arrowSize*Math.sin(angle+Math.PI/6));
             ctx.closePath(); ctx.fillStyle = color; ctx.fill();
         }
         ctx.setLineDash([]);
@@ -736,7 +754,7 @@
     }
 
     function saveStudents() {
-        localStorage.setItem('lb_students_pro2', JSON.stringify(students));
+        localStorage.setItem('lb_students_pro3', JSON.stringify(students));
         renderSidebar(); renderEditList();
     }
 
