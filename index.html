@@ -787,7 +787,7 @@
     function exportCSV() {
         const rows = [['이름', '나눔 준 횟수', '나눔 받은 횟수', '보드 참여']];
         insightStats().forEach(s => rows.push([s.name, s.gave, s.received, s.placed ? '참여' : '미참여']));
-        const csv = '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
         downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `배움보드_${dateStamp()}.csv`);
     }
 
