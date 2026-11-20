@@ -502,7 +502,12 @@
     }
 
     function resizeCanvas() {
-        canvas.width = board.clientWidth; canvas.height = board.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(board.clientWidth * dpr);
+        canvas.height = Math.round(board.clientHeight * dpr);
+        canvas.style.width = board.clientWidth + 'px';
+        canvas.style.height = board.clientHeight + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         // 화면이 줄면 화면 밖에 있는 카드를 안으로 끌어옴
         Object.keys(cards).forEach(sid => {
             const el = document.getElementById('card-' + sid);
@@ -565,7 +570,10 @@
         const p = clampCardPos(card, cards[sid].x, cards[sid].y);
         cards[sid] = p;
         card.style.left = p.x + 'px'; card.style.top = p.y + 'px';
+        card.title = '우클릭 또는 더블클릭(이동 모드)으로 보드에서 내리기';
         card.addEventListener('pointerdown', e => handleCardPointerDown(e, sid));
+        card.addEventListener('contextmenu', e => { e.preventDefault(); removeCardFromBoardUI(sid); });
+        card.addEventListener('dblclick', () => { if (mode === 'move') removeCardFromBoardUI(sid); });
         return card;
     }
 
@@ -591,15 +599,24 @@
         if (sb) sb.classList.remove('completed');
     }
 
+    function removeCardFromBoardUI(sid) {
+        if (!cards[sid]) return;
+        removeCardFromBoard(sid);
+        saveState(); updateBadges(); updateProgress(); drawCanvas();
+    }
+
     function handleCardPointerDown(e, sid) {
+        if (e.button !== undefined && e.button !== 0) return; // 우클릭/가운데 클릭은 내리기 전용
         const el = document.getElementById('card-' + sid);
         if (!el) return;
         if (mode === 'move') {
             e.preventDefault();
             const sx = e.clientX, sy = e.clientY;
             const ox = el.offsetLeft, oy = el.offsetTop;
+            let moved = false;
             function onMove(ev) {
                 const p = clampCardPos(el, ox + ev.clientX - sx, oy + ev.clientY - sy);
+                if (p.x !== ox || p.y !== oy) moved = true;
                 el.style.left = p.x + 'px'; el.style.top = p.y + 'px';
                 cards[sid] = p;
                 drawCanvas();
@@ -608,6 +625,7 @@
                 document.removeEventListener('pointermove', onMove);
                 document.removeEventListener('pointerup', onUp);
                 document.removeEventListener('pointercancel', onUp);
+                if (moved) suppressBoardClick();
                 saveState();
             }
             document.addEventListener('pointermove', onMove);
@@ -622,9 +640,19 @@
 
     function handlePointerMove(e) { if (isDrawing) { e.preventDefault(); updatePointerPos(e); drawCanvas(); } }
 
+    let _suppressTimer = null;
+    // 카드 제스처(연결 그리기·드래그)가 끝난 직후 발생하는 click 한 번을 무시한다.
+    // 연결 성공/중복/취소, 드래그 종료 위치와 무관하게 화살표 삭제 확인창이 뜨는 것을 방지.
+    function suppressBoardClick() {
+        justConnected = true;
+        if (_suppressTimer) clearTimeout(_suppressTimer);
+        _suppressTimer = setTimeout(() => { justConnected = false; }, 250);
+    }
+
     function handlePointerUp(e) {
         if (!isDrawing) return;
         isDrawing = false;
+        suppressBoardClick();
         const target = document.elementFromPoint(e.clientX, e.clientY);
         const tc = target ? target.closest('.board-card') : null;
         if (tc && tc.dataset.studentId && tc.dataset.studentId !== startCardId) {
@@ -633,8 +661,6 @@
                 connections.push({ from: startCardId, to: toId });
                 playSound('connect');
                 updateBadges(); saveState();
-                justConnected = true;
-                setTimeout(() => { justConnected = false; }, 200);
             }
         }
         startCardId = null;
@@ -796,8 +822,10 @@
             CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h) { this.rect(x, y, w, h); return this; };
         }
         const W = board.clientWidth, H = board.clientHeight;
-        const off = document.createElement('canvas'); off.width = W; off.height = H;
+        const SCALE = 2; // 고해상도 저장 (좌표는 CSS 픽셀 기준 그대로)
+        const off = document.createElement('canvas'); off.width = W * SCALE; off.height = H * SCALE;
         const o = off.getContext('2d');
+        o.setTransform(SCALE, 0, 0, SCALE, 0, 0);
         o.fillStyle = '#f8fafc'; o.fillRect(0, 0, W, H);
         // 도트 배경
         o.fillStyle = '#cbd5e1';
@@ -831,7 +859,7 @@
             o.font = '28px sans-serif'; o.textAlign = 'center'; o.textBaseline = 'middle';
             o.fillText(st.emoji, x + w/2, y + 43);
             o.fillStyle = '#1e293b'; o.font = '700 14px Pretendard, sans-serif';
-            o.fillText(st.name, x + w/2, y + 84);
+            o.fillText(st.name, x + w/2, y + 84, w - 16);
             const gave = connections.filter(c => c.from === sid).length;
             if (gave > 0) {
                 o.fillStyle = st.color;
